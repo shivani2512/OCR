@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body_block %}
+<div class="jumbotron">
+ {% if register %}
+        <h1>Details are submitted...</h1>
+        <a class="btn btn-primary" href="{% url 'ocr_app:process' user.id %}">Start</a>
+    {% else %}
+         <h3>Submit Details</h3>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+

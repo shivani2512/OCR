@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Base</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+            <div class="container">
+             <ul class="nav navbar-nav">
+                <li><a class="navbar-brand" href="{% url 'index' %}">Index</a></li>
+                 <li><a class="navbar-brand" href="{% url 'ocr_app:register' %}">Registration</a></li>
+                 {% if user.is_authenticated %}
+                    <li><a class="navbar-brand" href="{% url 'ocr_app:logout' %}">logout</a></li>
+                 {% else %}
+                    <li><a class="navbar-brand" href="{% url 'ocr_app:login' %}">Login</a></li>
+                 {% endif %}
+            </ul>
+       </div>
+    </nav>
+
+    <div class="container">
+        {% block body_block %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>

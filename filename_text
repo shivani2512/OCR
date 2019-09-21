@@ -1,0 +1,68 @@
+DHARMSINH DESAI UNIVERSITY, NADIAD
+FACULTY OF MANAGEMENT AND INFORMATION SCIENCE
+) ‘ M.C.A. SEMESTER V
+
+SUBJECT: CS-512 ADVANCED JAVA
+
+ 
+
+Examination 3 Seat No i
+Date Sl Day :m
+Time t -0 to . Max. Marks : 60
+INSTRUCTIONS:
+L. Answer each section in separate answer book.
+2. Figures to the right indicate maximum marks for that question.
+3. The symbols used carry their iisual meanings,
+4. Assume suitable data, if required & mention them clearly.
+5. Draw neat sketches wherever necessary.
+SECTION -1
+Q.1 (A) Do as directed. [10]
+1. Which is not main function of Servlet container? [1]
+(a) execute (b) load (c) call (d) initialize
+2.  One object per servlet. [
+(a) ServletParameter  (b) ServletContext (c) Container (d) ServletConfig
+3. Which interface contains getSession() method? ) . . [1]
+(a) ServletSession (b) HttpServletRequest
+(c) ServletRequest . (d) HttpServletResponse
+4. Which method cail provides information about initialization parameters that are [1
+applicable to an entire web application?
+(a) ServletConfig.getInitParameters()  (b) ServletContext.getInitParameters()
+(c) ServletConfig.getInitParameter(String)
+(d) ServletContext.getInitParameter(String)
+5. How is the data shared between servlets? [11
+(a) Using put/get value methods of ServletContext.
+(b) Using set/get attribute methods of ServietContext.
+(c) Using value bound/unbound methods.
+(d) Using set/get attribute methods of ServletResponse.
+6. Which method is used to send precompiled query to the database? [
+(a) createStatement()  (b) prepareStatement()  (c) prepareCall() (d) execute()
+T defines the contract between the container and component. [1]
+(a) Resource pooling (b) Deployment descriptor “(c) web container (d) none
+8. Annotation is which type of modifier? : [1]
+(a) Private - (b) Public (c) Protected (d) Custom
+9. Give differences of Servletinit parameters vs. context init parameters. [2]
+Q.2 Attempt Any TWO from the following questions. [10]
+(a) Draw and explain container architecture with its services.
+(b) List and explain JSP Implicit Objects,
+() Why session tracking is required? Explain Session tracking using Serviet and
+" Session object. ' -
+Q.3 Do as directed. [10]
+
+(@) In a web application, Register.html requests user for Username, Password and
+
+Confirm Password. Write a servlet that reads drivers and data source name (url) to
+
+o/ connect the”database from deployment descriptor, if user’s password and confirm
+
+- password matches then record should be inserted to UserLogin-table and displays
+. appropriate message, otherwise display Error meséagel® _- -
+
+(b) Create a JavaBean named ItemBean to hold itemNo(int), ,description(String),
+price(float) and quantity(int). Create HTML page that requests user for input. On
+submission a JSP page should be executed to store data in ItemBean instance and
+read the data and display in appropriate format.(Using JSP usebean action tags
+only)
+
+OR
+
+Page 1 of 2

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Base</title>
+<!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">-->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<!--        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>-->
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+<body>
+<!--navbar navbar-expand-md navbar-dark bg-dark-->
+ <nav class="navbar navbar-inverse  ">
+     <ul class="nav navbar-nav">
+         <li><a style="color:white" class="navbar-brand" href="{% url 'index' %}">Index</a></li>
+        <li><a style="color:white" class="navbar-brand" href="{% url 'ocr_app:register' %}">Registration</a></li>
+        {% if user.is_authenticated %}
+            <li><a style="color:white" class="navbar-brand" href="{% url 'ocr_app:logout' %}">logout</a></li>
+         {% else %}
+            <li><a style="color:white" class="navbar-brand" href="{% url 'ocr_app:login' %}">Login</a></li>
+         {% endif %}
+     </ul>
+
+     <ul class="nav navbar-nav navbar-right">
+          <li><a style="color:white" href="#" class="navbar-brand" >Save</a></li>
+          <li><a style="color:white" href="#" class="navbar-brand">Edit</a></li>
+          <li><a style="color:white" href="#" class="navbar-brand">Save</a></li>
+          <li><a style="color:white" href="#" class="navbar-brand">Edit</a></li>
+      </ul>
+<!--         <ul class="nav navbar-nav">-->
+<!--                     <li><a href="#" class="navbar-brand navbar-right">Apple</a></li>-->
+<!--         </ul>-->
+    </nav>
+
+  <div class="row">
+    <div class="col-xs-9 col-md-7">
+        <div class="container-fluid jumbotron">
+          <div class="text-right">
+                <p class="text-left">
+                    <b>File Name : <br>Desription : <br>Size : </b>
+                </p>
+            </div>
+<!--        <embed src="media/sample2.pdf" type="application/pdf"   height="650px" width="100%">-->
+            <iframe src="media/sample2.pdf" height="650px" width="100%"></iframe>
+
+    </div>
+  </div>
+
+    <div class="col-xs-3 col-md-5">
+        <div class="text-right jumbotron">
+            <br><br><br><br><br>
+<!--            <embed src="media/sample2.pdf" type="application/pdf"   height="650px" width="100%">-->
+            <iframe src="media/sample2.pdf" height="650px" width="100%"></iframe>
+
+        </div>
+    </div>
+  </div>
+ <div class="container">
+        <ul class="pagination" >
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+ </div>
+</body>
+</html>
+<!--<iframe src="/home/shivani/PycharmProjects/OCR/OCR/templates/demo.pdf" style="width:718px; height:400px;" frameborder="2"></iframe>-->
+<!--Worked-->
+<!--<iframe src="https://docs.google.com/gview?url=https:///home/shivani/PycharmProjects/OCR/OCR/templates/demo.pdf&embedded=true" style="width:800px; height:500px;" frameborder="0"></iframe>-->

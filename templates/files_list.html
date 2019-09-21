@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load mytags %}
+{% block body_block %}
+<div class="jumbotron">
+<table>
+   <tr>
+     <th>Image Name</td>
+     <th>Download</td>
+   </tr>
+ {% for file in total_files %}
+   <tr>
+     <td>{{file}}</td>
+     <td><a href="{{file.url}}">Download</a></td>
+   </tr>
+ {% endfor %}
+</table>
+</div>
+{% endblock %}

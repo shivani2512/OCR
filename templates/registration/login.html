@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block body_block %}
+<div class="container">
+    <div class="jumbotron">
+         <h3>Login here</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+        <div id="div_id_username" class="form-group"> <label for="id_username" class="col-form-label  requiredField">
+                Email Address<span class="asteriskField">*</span> </label> <div class=""> <input type="email" name="email" maxlength="255" class="emailinput form-control" required id="id_email"> </div> </div> <div id="div_id_password" class="form-group"> <label for="id_password" class="col-form-label  requiredField">
+                Password<span class="asteriskField">*</span> </label> <div class=""> <input type="password" name="password" class="textinput textInput form-control" required id="id_password"> </div> </div> <div id="div_id_Contact" class="form-group"> <label for="id_Contact" class="col-form-label  requiredField">
+                <input type="checkbox" name="remember_me" value="true"> Remember me</label>
+                <br>
+        </div>
+                <input type="submit" value="Login" class="btn btn-primary"><br><br>
+                <a href="{% url 'password_reset' %}">Forgot Password?</a>
+
+        </form>
+    </div>
+{% endblock %}

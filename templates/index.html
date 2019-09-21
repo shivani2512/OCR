@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body_block %}
+    <div class="jumbotron">
+            {% if user.is_authenticated %}
+                <h2>welcome {{ user.username }}</h2>
+                <a class="btn btn-primary" href="{% url 'ocr_app:upload' user.id %}">Submit Image</a>
+            {% else %}
+                <h2>Register/Login to use service</h2>
+            {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load mytags %}
+{% block body_block %}
+<div class="jumbotron">
+    <table class="table">
+        <thead>
+             <tr>
+                <th>Image Name</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for val in value %}
+            <tr>
+                <td>{{ val|basename }}</td>
+                <td><a href="{{ val }}" ><button class="btn btn-primary btn-sm" > Download</button></a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

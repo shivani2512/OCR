@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block body_block %}
+    <div class="jumbotron">
+    {% if upload %}
+        <h1>Details are submitted...</h1>
+        <a class="btn btn-primary" href="{% url 'ocr_app:process' user.id %}">Start</a>
+
+    {% else %}
+        <h2>Upload here..</h2>
+         <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+            {{ upload_form|crispy }}
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </form>
+    {% endif %}
+    </div>
+{% endblock %}
