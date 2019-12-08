@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
 from .forms import UserAdminCreationForm, UserAdminChangeForm
-from .models import User, Upload
+from .models import User, Upload, Output
 
 
 class UserAdmin(BaseUserAdmin):
@@ -36,6 +36,7 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Upload)
+admin.site.register(Output)
 
 # Remove Group Model from admin. We're not using it.
 admin.site.unregister(Group)

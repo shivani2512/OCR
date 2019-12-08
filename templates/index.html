@@ -3,7 +3,8 @@
     <div class="jumbotron">
             {% if user.is_authenticated %}
                 <h2>welcome {{ user.username }}</h2>
-                <a class="btn btn-primary" href="{% url 'ocr_app:upload' user.id %}">Submit Image</a>
+                <a class="btn btn-primary" href="{% url 'ocr_app:upload' user.id %}">Submit Image</a> <br> <br>
+                <a class="btn btn-primary" href="{% url 'ocr_app:logs' user.id %}">History</a> <br> <br>
             {% else %}
                 <h2>Register/Login to use service</h2>
             {% endif %}

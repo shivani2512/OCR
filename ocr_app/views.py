@@ -10,9 +10,9 @@ from .forms import UserForm, UploadForm, LoginForm
 from .models import User, Upload
 from django.views.generic import (TemplateView, ListView,
                                   DetailView, UpdateView)
-from django.contrib.auth import authenticate,login, logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from .backends import EmailBackend
 from django.core.mail import send_mail
@@ -28,6 +28,9 @@ from pdf2image import convert_from_bytes
 import cv2
 import re
 from matplotlib.pyplot import imsave
+from PIL import Image
+
+Image.warnings.simplefilter('error', Image.DecompressionBombWarning)
 try:
     from PIL import Image
 except ImportError:
@@ -38,9 +41,7 @@ from django.conf import settings
 from django.http import HttpResponse, Http404
 
 
-
 def login_user(request):
-
     email = request.POST.get('email')
     password = request.POST.get('password')
     # form = UserForm(request.POST)
@@ -59,7 +60,6 @@ def login_user(request):
     else:
         print("wrong person tried to access.")
     return render(request, 'registration/login.html', {})
-
 
 
 @login_required()
@@ -108,7 +108,7 @@ def registration(request):
         user_form = UserForm()
 
     return render(request, 'registration/register.html', {'user_form': user_form,
-                                             'register': register})
+                                                          'register': register})
 
 
 class Index(TemplateView):
@@ -121,10 +121,15 @@ class Home(TemplateView):
     template_name = 'home.html'
 
 
-def UploadImage(request,pk=None):
+def demo(request):
+    return render(request, 'demo.html', {})
+
+
+def UploadImage(request, pk=None):
     upload = False
     user = User.objects.get(pk=pk)
     # print()
+    destination = "/home/shivani/PycharmProjects/OCR/OCR/Original_Images/"
 
     if request.method == 'POST':
         uploadForm = UploadForm(request.POST, request.FILES)
@@ -133,8 +138,8 @@ def UploadImage(request,pk=None):
             user.save()
             upload = uploadForm.save(commit=False)
             upload.user = request.user
+            # upload.user.set([request.user])
             upload.save()
-
             upload = True
         else:
             print(uploadForm.errors)
@@ -154,7 +159,6 @@ def extract_image():
             if '.tiff' in file:
                 tiff_image.append(os.path.join(r, file))
 
-
     # Original Image
     pdf_files = glob.glob("%s/*.pdf" % pdf_dir)
     for file in pdf_files:
@@ -168,12 +172,12 @@ def extract_image():
             # print("inside")
             filename_pdf = pdf_dir + "/" + os.path.splitext(file_base)[0] + "_" + str(image_counter) + ".pdf"
             print(filename_pdf)
+            # Original :
             pdf = pytesseract.image_to_pdf_or_hocr(page, extension='pdf', lang='eng')
             print(filename_pdf + "is created")
             page.save(filename_pdf, 'pdf')
             image_counter = image_counter + 1
             # t = open(filename_pdf, "w+b")
-
 
     for tiff in tiff_image:
         parent = Path(tiff).parent
@@ -190,9 +194,14 @@ def extract_image():
         # print(filename_text)
         # filename_text.save(filename_text)
 
+
+        # one more try
+
+        # Working good
         # Below this:
         # pdf = pytesseract.image_to_pdf_or_hocr(tiff, extension='pdf', lang='eng')
         txt = pytesseract.image_to_string(tiff, lang='eng')
+
         t = open(filename_text, "w+b")
         # Below this:
         # f = open(filename_pdf, "w+b")
@@ -203,22 +212,55 @@ def extract_image():
         # else:
         #     print(filename_pdf + "not created")
         if t:
-            t.write(txt.encode())
+            # Changed this too
+            # t.write(txt.encode())
+            # t.close()
+            # print(filename_text + "is created")
+
+            # Define config parameters.
+            # '-l eng'  for using the English language
+            # '--oem 1' for using LSTM OCR Engine
+            config = ('-l eng --oem 1 --psm 3')
+
+            # Read image from disk
+            im = cv2.imread(tiff, cv2.IMREAD_COLOR)
+
+            # Run tesseract OCR on image
+            text = pytesseract.image_to_string(im, config=config)
+
+            # Print recognized text
+            t.write(text.encode())
             t.close()
             print(filename_text + "is created")
+            # print(text)
         else:
             print(filename_text + "is not created")
 
-        os.remove(tiff)
-def select_option(option):
+            # Define config parameters.
+            # '-l eng'  for using the English language
+            # '--oem 1' for using LSTM OCR Engine
+            config = ('-l eng --oem 1 --psm 3')
 
+            # Read image from disk
+            im = cv2.imread(tiff, cv2.IMREAD_COLOR)
+
+            # Run tesseract OCR on image
+            text = pytesseract.image_to_string(im, config=config)
+
+            # Print recognized text
+            print(text)
+
+
+        os.remove(tiff)
+
+
+def select_option(option):
     jpg_image = []
     # r=root, d=directories, f = files
     for r, d, f in os.walk(pdf_dir):
         for file in f:
             if '.jpg' in file:
                 jpg_image.append(os.path.join(r, file))
-
 
     if int(option) == 1:
         # print("inside op 1")
@@ -284,10 +326,11 @@ def select_option(option):
 
 def convert_into_jpeg(pdf):
     pdf_files = glob.glob("%s/*.pdf" % pdf_dir)
+    print(len(pdf_files))
     for file in pdf_files:
-        # print(file)
+        print(file)
         file_base = os.path.basename(file)
-        print(file_base)
+        # print(file_base)
 
         images = convert_from_bytes(open(file, 'rb').read())
         image_counter = 1
@@ -297,204 +340,200 @@ def convert_into_jpeg(pdf):
             page.save(filename, 'JPEG')
             image_counter = image_counter + 1
 
-# def convert_into_jpg(input_path, process_path, output_path, option):
-#     print(input_path)
-#     print(process_path)
-#     print(output_path)
-#     global date_dir
-#
-#
-#     date_dir = str(process_path + "/" + today)
-#     pdf_files = glob.glob("%s/*.pdf" % input_path)
-#
-#     #Creatind date_dir
-#     if os.path.exists(date_dir):
-#         print(date_dir + "exsits")
-#     else:
-#         print(os.makedirs(date_dir), " is created")
-#         # print(d + " is Created")
-#     #
-#     def perform(d):
-#         # print(type(d))
-#         dr_files = glob.glob("%s/*.pdf" % d)
-#         for file in dr_files:
-#             file_base = os.path.basename(file)
-#             images = convert_from_bytes(open(file, 'rb').read())
-#             image_counter = 1
-#             for page in images:
-#                 filename = d + "/" + os.path.splitext(file_base)[0] + "_" + str(image_counter) + ".jpg"
-#                 print(filename)
-#                 page.save(filename, 'JPEG')
-#                 image_counter = image_counter + 1
-#
-#     def check(file):
-#         path = os.path.basename(file)
-#         print(file)
-#         if os.path.isfile(file):
-#             global name
-#             name = file
-#         cnt = 1
-#         if os.path.isdir(date_dir + "/" + os.path.splitext(path)[0]):
-#             # cnt = max([re.findall("_").join(find_name.split("_")[0:-1]+"_"+"(.*?)$",find_name for find_name in os.listdir(os.path.join(converted_image_path,d))]))
-#             d = date_dir + "/" + os.path.splitext(path)[0] + "_" + str(cnt)
-#             cnt += 1
-#             check(d)
-#         else:
-#             d = date_dir + "/" + os.path.splitext(path)[0]
-#             os.makedirs(d)
-#             print(d + "is created")
-#             shutil.copy(name, d)
-#             perform(d)
-#     #
-#     for file in pdf_files:
-#         check(file)
+    # def convert_into_jpg(input_path, process_path, output_path, option):
+    #     print(input_path)
+    #     print(process_path)
+    #     print(output_path)
+    #     global date_dir
+    #
+    #
+    #     date_dir = str(process_path + "/" + today)
+    #     pdf_files = glob.glob("%s/*.pdf" % input_path)
+    #
+    #     #Creatind date_dir
+    #     if os.path.exists(date_dir):
+    #         print(date_dir + "exsits")
+    #     else:
+    #         print(os.makedirs(date_dir), " is created")
+    #         # print(d + " is Created")
+    #     #
+    #     def perform(d):
+    #         # print(type(d))
+    #         dr_files = glob.glob("%s/*.pdf" % d)
+    #         for file in dr_files:
+    #             file_base = os.path.basename(file)
+    #             images = convert_from_bytes(open(file, 'rb').read())
+    #             image_counter = 1
+    #             for page in images:
+    #                 filename = d + "/" + os.path.splitext(file_base)[0] + "_" + str(image_counter) + ".jpg"
+    #                 print(filename)
+    #                 page.save(filename, 'JPEG')
+    #                 image_counter = image_counter + 1
+    #
+    #     def check(file):
+    #         path = os.path.basename(file)
+    #         print(file)
+    #         if os.path.isfile(file):
+    #             global name
+    #             name = file
+    #         cnt = 1
+    #         if os.path.isdir(date_dir + "/" + os.path.splitext(path)[0]):
+    #             # cnt = max([re.findall("_").join(find_name.split("_")[0:-1]+"_"+"(.*?)$",find_name for find_name in os.listdir(os.path.join(converted_image_path,d))]))
+    #             d = date_dir + "/" + os.path.splitext(path)[0] + "_" + str(cnt)
+    #             cnt += 1
+    #             check(d)
+    #         else:
+    #             d = date_dir + "/" + os.path.splitext(path)[0]
+    #             os.makedirs(d)
+    #             print(d + "is created")
+    #             shutil.copy(name, d)
+    #             perform(d)
+    #     #
+    #     for file in pdf_files:
+    #         check(file)
 
+    # def select_option(option, process_path):
+    #
+    #     date_dir = str(process_path + "/" + today)
+    #     print(date_dir)
+    #     # print(date_dir)
+    #     jpg_image = []
+    #     # r=root, d=directories, f = files
+    #     for r, d, f in os.walk(date_dir):
+    #         for file in f:
+    #             if '.jpg' in file:
+    #                 jpg_image.append(os.path.join(r, file))
+    #
+    #     if int(option) == 1:
+    #         # print("inside op 1")
+    #         for jpg in jpg_image:
+    #             parent = Path(jpg).parent
+    #             path = os.path.basename(parent)
+    #             # print(path)
+    #             jpg_base = os.path.basename(jpg)
+    #             d = path + "/" + jpg_base
+    #             # print(d)
+    #             image1 = cv2.imread(jpg)
+    #             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    #             filename = os.path.splitext(jpg)[0] + ".tiff"
+    #             print(filename)
+    #             ret, thresh1 = cv2.threshold(gray, 120, 255, cv2.THRESH_TOZERO)
+    #             imsave(filename, thresh1, format='tiff', dpi=300)
+    #             os.remove(jpg)
+    #
+    #     elif int(option) == 2:
+    #         for jpg in jpg_image:
+    #             parent = Path(jpg).parent
+    #             path = os.path.basename(parent)
+    #             jpg_base = os.path.basename(jpg)
+    #             d = path + "/" + jpg_base
+    #             image1 = cv2.imread(jpg)
+    #             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    #             filename = os.path.splitext(jpg)[0] + ".tiff"
+    #             print(filename)
+    #             thresh2 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 199, 5)
+    #             imsave(filename, thresh2, format='tiff', dpi=300)
+    #             os.remove(jpg)
+    #
+    #     elif int(option) == 3:
+    #         for jpg in jpg_image:
+    #             parent = Path(jpg).parent
+    #             path = os.path.basename(parent)
+    #             jpg_base = os.path.basename(jpg)
+    #             d = path + "/" + jpg_base
+    #             image1 = cv2.imread(jpg)
+    #             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    #             filename = os.path.splitext(jpg)[0] + ".tiff"
+    #             print(filename)
+    #             thresh3 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 199, 5)
+    #             imsave(filename, thresh3, format='tiff', dpi=300)
+    #             os.remove(jpg)
+    #
+    #     elif int(option) == 4:
+    #         print("inside op 4:")
+    #         for jpg in jpg_image:
+    #             parent = Path(jpg).parent
+    #             path = os.path.basename(parent)
+    #             # print(path)
+    #             jpg_base = os.path.basename(jpg)
+    #             d = path + "/" + jpg_base
+    #             image1 = cv2.imread(jpg)
+    #             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
+    #             filename = os.path.splitext(jpg)[0] + ".tiff"
+    #             print(filename)
+    #             ret, thresh4 = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    #             imsave(filename, thresh4, format='tiff', dpi=300)
+    #             os.remove(jpg)
+    #
 
-# def select_option(option, process_path):
-#
-#     date_dir = str(process_path + "/" + today)
-#     print(date_dir)
-#     # print(date_dir)
-#     jpg_image = []
-#     # r=root, d=directories, f = files
-#     for r, d, f in os.walk(date_dir):
-#         for file in f:
-#             if '.jpg' in file:
-#                 jpg_image.append(os.path.join(r, file))
-#
-#     if int(option) == 1:
-#         # print("inside op 1")
-#         for jpg in jpg_image:
-#             parent = Path(jpg).parent
-#             path = os.path.basename(parent)
-#             # print(path)
-#             jpg_base = os.path.basename(jpg)
-#             d = path + "/" + jpg_base
-#             # print(d)
-#             image1 = cv2.imread(jpg)
-#             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-#             filename = os.path.splitext(jpg)[0] + ".tiff"
-#             print(filename)
-#             ret, thresh1 = cv2.threshold(gray, 120, 255, cv2.THRESH_TOZERO)
-#             imsave(filename, thresh1, format='tiff', dpi=300)
-#             os.remove(jpg)
-#
-#     elif int(option) == 2:
-#         for jpg in jpg_image:
-#             parent = Path(jpg).parent
-#             path = os.path.basename(parent)
-#             jpg_base = os.path.basename(jpg)
-#             d = path + "/" + jpg_base
-#             image1 = cv2.imread(jpg)
-#             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-#             filename = os.path.splitext(jpg)[0] + ".tiff"
-#             print(filename)
-#             thresh2 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 199, 5)
-#             imsave(filename, thresh2, format='tiff', dpi=300)
-#             os.remove(jpg)
-#
-#     elif int(option) == 3:
-#         for jpg in jpg_image:
-#             parent = Path(jpg).parent
-#             path = os.path.basename(parent)
-#             jpg_base = os.path.basename(jpg)
-#             d = path + "/" + jpg_base
-#             image1 = cv2.imread(jpg)
-#             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-#             filename = os.path.splitext(jpg)[0] + ".tiff"
-#             print(filename)
-#             thresh3 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 199, 5)
-#             imsave(filename, thresh3, format='tiff', dpi=300)
-#             os.remove(jpg)
-#
-#     elif int(option) == 4:
-#         print("inside op 4:")
-#         for jpg in jpg_image:
-#             parent = Path(jpg).parent
-#             path = os.path.basename(parent)
-#             # print(path)
-#             jpg_base = os.path.basename(jpg)
-#             d = path + "/" + jpg_base
-#             image1 = cv2.imread(jpg)
-#             gray = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-#             filename = os.path.splitext(jpg)[0] + ".tiff"
-#             print(filename)
-#             ret, thresh4 = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-#             imsave(filename, thresh4, format='tiff', dpi=300)
-#             os.remove(jpg)
-#
+    # def extract_image(output_path, process_path, input_path):
+    #
+    #     # print(outputpath)
+    #     date_dir = str(process_path + "/" + today)
+    #
+    #
+    #     tiff_image = []
+    #     for r, d, f in os.walk(date_dir):
+    #         for file in f:
+    #             if '.tiff' in file:
+    #                 tiff_image.append(os.path.join(r, file))
+    #     pdf_files = glob.glob("%s/*.pdf" % input_path)
+    #     extract_date_dir = str(output_path + "/" + today)
+    #
+    #     # for tif in tiff_image:
+    #     #     print(tif)
+    #
+    #     def convert_image():
+    #         # def convert():
+    #         for tiff in tiff_image:
+    #             parent = Path(tiff).parent
+    #             path = os.path.basename(parent)
+    #             tiff_base = os.path.basename(tiff)
+    #
+    #             filename_pdf = extract_date_dir + "/" + path + "/" + os.path.splitext(tiff_base)[0] + ".pdf"
+    #             print(filename_pdf)
+    #             filename_text = extract_date_dir + "/" + path + "/" + os.path.splitext(tiff_base)[0] + ".txt"
+    #             print(filename_text)
+    #             pdf = pytesseract.image_to_pdf_or_hocr(tiff, extension='pdf', lang='eng')
+    #             txt = pytesseract.image_to_string(tiff, lang='eng')
+    #             t = open(filename_text, "w+b")
+    #             f = open(filename_pdf, "w+b")
+    #             if f:
+    #                 f.write(bytearray(pdf))
+    #                 f.close()
+    #             else:
+    #                 print(filename_pdf + "not created")
+    #             if t:
+    #                 t.write(txt.encode())
+    #                 t.close()
+    #             else:
+    #                 print(filename_text + "is not created")
+    #
+    #     def check(file):
+    #         path = os.path.basename(file)
+    #         if os.path.isfile(file):
+    #             global name
+    #             name = file
+    #         # print(path)
+    #         # Make changes here
+    #         cnt = 1
+    #         if os.path.isdir(extract_date_dir + "/" + os.path.splitext(path)[0]):
+    #             d = extract_date_dir + "/" + os.path.splitext(path)[0] + "_" + str(cnt)
+    #             cnt += 1
+    #             check(d)
+    #         else:
+    #             # oldName = os.path.splitext(path)[0] + ".pdf"
+    #             d = extract_date_dir + "/" + os.path.splitext(path)[0]
+    #             os.makedirs(d)
+    #             shutil.copy(name, d)
+    #             print(d + "is created")
+    #             convert_image()
+    #
+    #             # perform(d)
+    #
+    #     for file in pdf_files:
+    #         check(file)
 
-# def extract_image(output_path, process_path, input_path):
-#
-#     # print(outputpath)
-#     date_dir = str(process_path + "/" + today)
-#
-#
-#     tiff_image = []
-#     for r, d, f in os.walk(date_dir):
-#         for file in f:
-#             if '.tiff' in file:
-#                 tiff_image.append(os.path.join(r, file))
-#     pdf_files = glob.glob("%s/*.pdf" % input_path)
-#     extract_date_dir = str(output_path + "/" + today)
-#
-#     # for tif in tiff_image:
-#     #     print(tif)
-#
-#     def convert_image():
-#         # def convert():
-#         for tiff in tiff_image:
-#             parent = Path(tiff).parent
-#             path = os.path.basename(parent)
-#             tiff_base = os.path.basename(tiff)
-#
-#             filename_pdf = extract_date_dir + "/" + path + "/" + os.path.splitext(tiff_base)[0] + ".pdf"
-#             print(filename_pdf)
-#             filename_text = extract_date_dir + "/" + path + "/" + os.path.splitext(tiff_base)[0] + ".txt"
-#             print(filename_text)
-#             pdf = pytesseract.image_to_pdf_or_hocr(tiff, extension='pdf', lang='eng')
-#             txt = pytesseract.image_to_string(tiff, lang='eng')
-#             t = open(filename_text, "w+b")
-#             f = open(filename_pdf, "w+b")
-#             if f:
-#                 f.write(bytearray(pdf))
-#                 f.close()
-#             else:
-#                 print(filename_pdf + "not created")
-#             if t:
-#                 t.write(txt.encode())
-#                 t.close()
-#             else:
-#                 print(filename_text + "is not created")
-#
-#     def check(file):
-#         path = os.path.basename(file)
-#         if os.path.isfile(file):
-#             global name
-#             name = file
-#         # print(path)
-#         # Make changes here
-#         cnt = 1
-#         if os.path.isdir(extract_date_dir + "/" + os.path.splitext(path)[0]):
-#             d = extract_date_dir + "/" + os.path.splitext(path)[0] + "_" + str(cnt)
-#             cnt += 1
-#             check(d)
-#         else:
-#             # oldName = os.path.splitext(path)[0] + ".pdf"
-#             d = extract_date_dir + "/" + os.path.splitext(path)[0]
-#             os.makedirs(d)
-#             shutil.copy(name, d)
-#             print(d + "is created")
-#             convert_image()
-#
-#             # perform(d)
-#
-#     for file in pdf_files:
-#         check(file)
-
-
-def download_item(request, file_name):
-    print(file_name)
     '''
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     print(file_path)
@@ -508,18 +547,34 @@ def download_item(request, file_name):
         print("Error")
     '''
 
-def ImageProcess(request, pk=None):
 
+def history(request, pk=None):
     uploadObj = Upload.objects.all().filter(user=pk)
-    print(pk)
+    success = False
+    allFile = []
+    date = []
+    for value in uploadObj:
+        allFile.append(value.FileName)
+        success = True
+        print(value.FileName)
+        date.append(value.date)
+        # print(value.date)
+    mylist = zip(allFile, date)
+    return render(request, "history.html", {"success": success, "mylist": mylist})
+
+def ImageProcess(request, pk=None):
+    uploadObj = Upload.objects.all().filter(user=pk)
+    destination = "/home/shivani/PycharmProjects/OCR/OCR/Original_Images/"
+
     global pdf, option
     for value in uploadObj:
         pdf = value.File
         option = value.operation
-        # print(pdf)
+        print(pdf)
     convert_into_jpeg(pdf)
     select_option(option)
     extract_image()
+    #
     # Download
     # value = []
     # for r, d, f in os.walk("media/upload"):
@@ -536,10 +591,8 @@ def ImageProcess(request, pk=None):
     #     else:
     #         print("Error")
 
-
-
-        # download_item(request, val)
-        # print(val)
+    # download_item(request, val)
+    # print(val)
 
     # return render(request, "complete.html", {'value': value})
 
@@ -576,7 +629,6 @@ def ImageProcess(request, pk=None):
     #     raise Http404
     # return render(request, "complete.html", {})
 
-
     # fileObj = FileConfig.objects.all().filter(user=pk)
     # global input_path, process_path, output_path, option
     # for value in fileObj:
@@ -598,6 +650,38 @@ def ImageProcess(request, pk=None):
     #
 
     # Working properly...
+    success = False
+    value = []
+    for r, d, f in os.walk("media/upload"):
+        for file in f:
+            value.append(os.path.join(r, file))
+
+    # for val in value:
+    #     print(val)
+
+    if len(value) != 0:
+        success = True
+
+    return render(request, "allFiles.html", {'success': success, 'value': value})
+    # return redirect("ocr_app:allFile", {'success': success, 'value': value})
+
+def allFiles(request):
+    success = False
+    value = []
+    for r, d, f in os.walk("media/upload"):
+        for file in f:
+            value.append(os.path.join(r, file))
+
+    # for val in value:
+    #     print(val)
+
+    if len(value) != 0:
+        success = True
+
+    return render(request, "allFiles.html", {'success': success, 'value': value})
+
+
+def listFiles(request):
     value = []
     for r, d, f in os.walk("media/upload"):
         for file in f:
@@ -606,8 +690,101 @@ def ImageProcess(request, pk=None):
     for val in value:
         print(val)
 
-    return render(request, "complete.html", {'value': value})
+    return render(request, "listFile.html", {'value': value})
 
+
+def fileDownload(request, fileName):
+    # print(fileName)
+    destination = "/home/shivani/PycharmProjects/OCR/OCR/Original_Images/"
+    file_path = os.path.join("/home/shivani/PycharmProjects/OCR/OCR/media/upload", fileName)
+    if file_path:
+        print(file_path)
+        with open(file_path, 'rb') as fh:
+            extension = os.path.splitext(fileName)[1]
+            if extension == '.pdf':
+                response = HttpResponse(fh.read(), content_type="application/pdf")
+                response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                shutil.copy(file_path, destination)
+                return response
+
+            if extension == '.txt':
+                response = HttpResponse(fh.read(), content_type="application/txt")
+                response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                return response
+
+        # if flag == True:
+        #     shutil.move(file_path, destination)
+        #     print(fileName + "is moved ssuccessfully")
+        #
+        # if flag == 1:
+        for r, d, f in os.walk("media/upload"):
+            for file in f:
+                shutil.move(file_path, destination)
+                    # os.remove(os.path.join(r, file))
+
+    # print(file_path)
+    # if os.path.exists(file_path):
+    #     print(file_path)
+    # if os.path.isfile(file_path):
+    #     print(file_path)
+    #         with open(file_path, 'rb') as fh:
+    #             response = HttpResponse(fh.read(), content_type="application/pdf")
+    #             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+    #             return response
+    raise Http404
+
+
+def dd(request):  # file_name
+    # filename=request.get("outside Func")
+    print("dd funn")
+    if request.method == "GET":
+        print("file_name")
+        # print(file_name)
+
+
+# if request.method == "GET":
+#     print("Get method")
+#     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+#     if os.path.exists(file_path):
+#     # if os.path.isfile(file_path):
+#     #     print(file_path)
+#         with open(file_path, 'rb') as fh:
+#             response = HttpResponse(fh.read(), content_type="application/pdf")
+#             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+#             return response
+#     raise Http404
+
+# Wroked static for download
+# def dd(request):
+
+# def dd(request):
+#    if request.method == "GET":
+#         print("get")
+# print("get method")
+# / home / shivani / PycharmProjects / OCR / OCR / media / upload / TestLink.pdf
+
+#         file_path = "/home/shivani/PycharmProjects/OCR/OCR/TestLink.pdf"
+# file_path=os.path.join(settings.MEDIA_ROOT,file_name)
+#         if os.path.exists(file_path):
+# if os.path.isfile(file_path):
+#     print(file_path)
+#             with open(file_path, 'rb') as fh:
+#                 response = HttpResponse(fh.read(), content_type="application/pdf")
+#                 response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+#                 return response
+#         raise Http404
+
+
+#    file_path = os.path.join(settings.MEDIA_ROOT, path)
+#     file_path = "/home/shivani/PycharmProjects/OCR/OCR/media/upload/TestLink.pdf"
+# print(file_path)
+# if os.path.exists(file_path):
+#     print(file_path)
+#     with open(file_path, 'rb') as fh:
+#         response = HttpResponse(fh.read(), content_type="application/pdf")
+#         response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+#         return response
+# raise Http404
 
 
 #
@@ -646,4 +823,4 @@ def FileConfigurationForm(request, pk=None):
         Config_form = FileConfigForm()
 
     return render(request, 'FileConfig.html', {'form': Config_form,
-                                             'register': register})
+                                               'register': register})

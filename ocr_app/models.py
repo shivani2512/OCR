@@ -4,7 +4,8 @@ from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
-from datetime import date
+from datetime import date, datetime
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None):
@@ -117,13 +118,23 @@ operations = (
 
 
 class Upload(models.Model):
-    FileName = models.CharField(max_length=150,default='')
+    FileName = models.CharField(max_length=150, default='')
     File = models.FileField(upload_to='upload/')
     operation = models.CharField(max_length=50, choices=operations, default='1')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(default=datetime.now, blank=True)
 
     def __str__(self):
         return self.FileName
+
+
+class Output(models.Model):
+    filename = models.ForeignKey(Upload, on_delete=models.CASCADE)
+    # date = models.DateTimeField(auto_now_add=True)
+    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    # def __str__(self):
+    #     return self.filename
 
 # class FileConfig(models.Model):
 #     configName = models.CharField(max_length=50,default='')

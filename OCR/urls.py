@@ -20,7 +20,7 @@ from ocr_app import views
 from django.contrib.auth import views as auth_views
 from django.conf.urls.static import static
 from django.conf import settings
-
+from ocr_app import views
 
 urlpatterns = [
     url('admin/', admin.site.urls),
@@ -28,6 +28,7 @@ urlpatterns = [
     path('home', views.Home.as_view(), name='home'),
     path('ocr/', include('ocr_app.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+
 
     # path('reset/', include('django.contrib.auth.urls'))
     # url('reset/', include('django.contrib.auth.urls')),

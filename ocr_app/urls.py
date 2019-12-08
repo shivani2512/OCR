@@ -17,9 +17,10 @@ urlpatterns = [
     # path('config/<int:pk>', views.FileConfigurationForm, name='fileConfig'),
     path('process/<int:pk>', views.ImageProcess, name='process'),
     path('logout', views.logout_user, name='logout'),
-    path('process/media/upload/p<file_name>', views.download_item, name='download'),
-    # url(r'^download/(?P<path>.*)$', serve, {'document root': settings.MEDIA_ROOT}),
-    # url(r'^download/(?P<file_name>.+)$', views.download)
+    path('list/', views.listFiles, name='list'),
+    path('history/<int:pk>', views.history, name='logs'),
+    path('file/<str:fileName>/', views.fileDownload, name="fileDownload"),
+    path('allfile/', views.allFiles, name='allFile'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

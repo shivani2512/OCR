@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.forms import AuthenticationForm
-from .models import User, Upload
+from .models import User, Upload, Output
 
 
 class RegisterForm(forms.ModelForm):
@@ -81,7 +81,7 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'Contact']
+        fields = ['email', 'password', 'Contact']
 
 class LoginForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -91,6 +91,10 @@ class LoginForm(forms.ModelForm):
         model = User
         fields = ['email', 'password']
 
+class OutputForm(forms.ModelForm):
+    class Meta:
+        model = Output
+        fields = '__all__'
 
 class CustomAuthenticationForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
